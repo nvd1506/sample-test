@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Seismic NFT Card Generator</title>
+    <style>
+        body {
+            background: #0f0c29;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #canvas-container {
+            margin: 20px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 25px rgba(138, 43, 226, 0.6);
+            background: #000;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        input,
+        button {
+            padding: 12px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        input {
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #444;
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-save {
+            background: #8a2be2;
+            color: white;
+        }
+
+        .btn-download {
+            background: #00c853;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>SEISMIC CARD GENERATOR</h2>
+
+    <div id="canvas-container">
+        <canvas id="pfpCanvas" width="736" height="1037"></canvas>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="userName" placeholder="Nhập tên..." maxlength="20">
+        <input type="text" id="magnitude" placeholder="Nhập Magnitude..." value="SEISMIC">
+        <input type="file" id="imageInput" accept="image/*">
+        <button class="btn-save" id="saveLocal">LƯU TRẠNG THÁI (LOCAL STORAGE)</button>
+        <button class="btn-download" id="downloadBtn">TẢI ẢNH VỀ MÁY</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('pfpCanvas');
+        const ctx = canvas.getContext('2d');
+        const imageInput = document.getElementById('imageInput');
+        const userNameInput = document.getElementById('userName');
+        const magInput = document.getElementById('magnitude');
+
+        let userImage = new Image();
+        const frameImg = new Image();
+
+        // Đường dẫn ảnh khung (Đảm bảo file này nằm cùng thư mục file html)
+        frameImg.src = 'seismic_pfp_original.png';
+
+        // Khi khung tải xong hoặc khi có thay đổi dữ liệu thì vẽ lại
+        frameImg.onload = () => {
+            loadFromLocalStorage(); // Kiểm tra xem có dữ liệu cũ không
+            drawCard();
+        };
+
+        // Xử lý upload ảnh mới
+        imageInput.onchange = (e) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                userImage = new Image();
+                userImage.onload = () => drawCard();
+                userImage.src = event.target.result;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        };
+
+        // Lắng nghe thay đổi text
+        [userNameInput, magInput].forEach(el => el.oninput = drawCard);
+
+        function drawCard() {
+            // Xóa canvas
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Vẽ ảnh người dùng (nếu có)
+            if (userImage.src) {
+                // Tọa độ vùng xám trên khung hình của bạn
+                ctx.drawImage(userImage, 105, 65, 530, 630);
+            }
+
+            // 2. Vẽ khung Seismic đè lên trên cùng
+            ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+
+            // 3. Cấu hình Font và Glow cho chữ
+            ctx.fillStyle = "white";
+            ctx.shadowColor = "rgba(255, 255, 255, 0.7)";
+            ctx.shadowBlur = 10;
+            ctx.font = "bold 35px 'Segoe UI'";
+
+            // Vẽ Tên (Vị trí dòng kẻ 1)
+            const nameText = userNameInput.value.toUpperCase();
+            ctx.fillText(nameText, 165, 795);
+
+            // Vẽ Magnitude (Vị trí dòng kẻ 2)
+            const magText = magInput.value.toUpperCase() || "SEISMIC";
+            ctx.fillText(magText, 320, 850);
+
+            ctx.shadowBlur = 0; // Tắt glow cho các thành phần sau nếu có
+        }
+
+        // LƯU TRẠNG THÁI: Lưu cả ảnh PFP và Text vào Local Storage
+        document.getElementById('saveLocal').onclick = () => {
+            const appState = {
+                name: userNameInput.value,
+                magnitude: magInput.value,
+                pfpData: userImage.src // Lưu chuỗi Base64 của ảnh người dùng
+            };
+
+            try {
+                localStorage.setItem("seismic_pfp_state", JSON.stringify(appState));
+                alert("Đã lưu trạng thái thiết kế!");
+            } catch (e) {
+                alert("Dung lượng ảnh quá lớn để lưu vào LocalStorage. Hãy thử ảnh nhỏ hơn hoặc tải về máy.");
+            }
+        };
+
+        // TẢI TRẠNG THÁI: Khôi phục lại dữ liệu cũ khi reload trang
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem("seismic_pfp_state");
+            if (saved) {
+                const data = JSON.parse(saved);
+                userNameInput.value = data.name;
+                magInput.value = data.magnitude;
+                if (data.pfpData && data.pfpData.startsWith('data:image')) {
+                    userImage = new Image();
+                    userImage.onload = () => drawCard();
+                    userImage.src = data.pfpData;
+                }
+            }
+        }
+
+        // TẢI FILE ẢNH VỀ MÁY
+        document.getElementById('downloadBtn').onclick = () => {
+            // 1. Lấy dữ liệu từ Local Storage
+            const savedData = localStorage.getItem("seismic_pfp_state");
+
+            if (!savedData) {
+                alert("Không tìm thấy dữ liệu đã lưu trong Local Storage!");
+                return;
+            }
+
+            const data = JSON.parse(savedData);
+
+            // 2. Tạo một Image đối tượng để tải lại ảnh PFP đã lưu
+            const tempImg = new Image();
+            tempImg.crossOrigin = "Anonymous"; // Tránh lỗi Tainted Canvas
+
+            tempImg.onload = () => {
+                // Cập nhật lại các ô input để khớp với dữ liệu đã lưu
+                userNameInput.value = data.name;
+                magInput.value = data.magnitude;
+
+                // Gán ảnh vào biến userImage toàn cục và vẽ lại Canvas lần cuối
+                userImage = tempImg;
+                drawCard();
+
+                // 3. Tiến hành tải xuống sau khi Canvas đã được vẽ hoàn chỉnh
+                setTimeout(() => {
+                    try {
+                        const link = document.createElement('a');
+                        link.download = `Seismic_Stored_${data.name || 'NFT'}.png`;
+                        link.href = canvas.toDataURL("image/png");
+                        link.click();
+                    } catch (err) {
+                        console.error("Lỗi xuất ảnh:", err);
+                        alert("Lỗi bảo mật trình duyệt (CORS). Vui lòng chạy trang web qua Live Server.");
+                    }
+                }, 100); // Đợi 100ms để đảm bảo canvas đã render xong
+            };
+
+            tempImg.src = data.pfpData; // Kích hoạt quá trình tải ảnh từ chuỗi Base64
+        };
+    </script>
+</body>
+
+</html>
