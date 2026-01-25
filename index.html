@@ -29,6 +29,7 @@
             max-width: 100%;
             height: auto;
             display: block;
+            cursor: pointer;
         }
 
         .controls {
@@ -121,6 +122,9 @@
         const userNameInput = document.getElementById('userName');
         const roleInput = document.getElementById('role');
 
+        // Click canvas to upload image
+        canvas.onclick = () => imageInput.click();
+
         let userImage = new Image();
         const frameImg = new Image();
         frameImg.crossOrigin = "Anonymous";
@@ -146,6 +150,10 @@
         function drawCard(includeOverlayText = false) {
             ctx.fillStyle = "#000";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (frameImg.complete) {
+                ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+            }
 
             // Tọa độ vùng xám đã được tính toán lại cho canvas 400x600
             const targetX = 57;   // (105 / 736) * 400
@@ -177,10 +185,6 @@
                 ctx.clip();
                 ctx.drawImage(userImage, offsetX, offsetY, drawW, drawH);
                 ctx.restore();
-            }
-
-            if (frameImg.complete) {
-                ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
             }
 
             // Vẽ Text
