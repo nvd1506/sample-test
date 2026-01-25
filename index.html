@@ -155,14 +155,16 @@
                 ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
             }
 
-            // Tọa độ vùng xám đã được tính toán lại cho canvas 400x600
-            const targetX = 57;   // (105 / 736) * 400
-            const targetY = 38;   // (65 / 1037) * 600
-            const targetW = 288;  // (530 / 736) * 400
-            const targetH = 365;  // (630 / 1037) * 600
+            // Calculate dynamic coordinates based on canvas size (500x700)
+            // Original frame size: 736 x 1037
+            // Window: x=105, y=65, w=530, h=630
+            const targetX = (105 / 736) * canvas.width;
+            const targetY = (65 / 1037) * canvas.height;
+            const targetW = (530 / 736) * canvas.width;
+            const targetH = (630 / 1037) * canvas.height;
 
             if (userImage.src) {
-                // Thuật toán Resize Cover
+                // Resize Cover Algorithm
                 const imgRatio = userImage.width / userImage.height;
                 const targetRatio = targetW / targetH;
                 let drawW, drawH, offsetX, offsetY;
@@ -187,7 +189,7 @@
                 ctx.restore();
             }
 
-            // Vẽ Text
+            // Draw Text
             ctx.fillStyle = "white";
             ctx.shadowColor = "rgba(255, 255, 255, 0.7)";
             ctx.shadowBlur = 8;
@@ -195,8 +197,9 @@
             // Only draw Name and Role if requested (e.g. for download)
             if (includeOverlayText) {
                 ctx.font = "bold 20px 'Segoe UI'";
-                ctx.fillText(userNameInput.value.toUpperCase(), 90, 435);
-                ctx.fillText((roleInput.value || "SEISMIC").toUpperCase(), 175, 492);
+                // Adjust Y to align with input top + padding/font offset
+                ctx.fillText(userNameInput.value.toUpperCase(), 110, 442);
+                ctx.fillText((roleInput.value || "SEISMIC").toUpperCase(), 175, 497);
             }
 
             ctx.shadowBlur = 0;
