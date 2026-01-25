@@ -60,7 +60,7 @@
         let userImage = new Image();
         const frameImg = new Image();
         frameImg.crossOrigin = "Anonymous";
-        frameImg.src = 'seismic_pfp_original.png';
+        frameImg.src = 'seismic_pfp.jpg'; // Đường dẫn tới khung ảnh
 
         frameImg.onload = () => {
             loadFromLocalStorage();
@@ -171,7 +171,7 @@
                 userNameInput.value = "";
                 magInput.value = "SEISMIC";
                 imageInput.value = "";
-                
+
                 setTimeout(() => {
                     drawCard();
                     alert("Đã tải về và dọn dẹp bộ nhớ!");
