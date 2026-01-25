@@ -22,6 +22,7 @@
             overflow: hidden;
             box-shadow: 0 0 25px rgba(138, 43, 226, 0.6);
             background: #000;
+            position: relative;
         }
 
         canvas {
@@ -102,13 +103,12 @@
     <div id="canvas-container">
         <canvas id="pfpCanvas" width="400" height="600"></canvas>
         <input type="text" id="userName" placeholder="NAME" maxlength="20" class="overlay-input"
-            style="top: 418px; font: bold 20px 'Segoe UI';">
-        <input type="text" id="role" placeholder="ROLE" maxlength="20" class="overlay-input"
-            style="top: 445px; font: italic 18px 'Segoe UI';">
+            style="top: 438px; font: bold 20px 'Segoe UI';">
+        <input type="text" id="role" placeholder="ROLE" maxlength="20" class="overlay-input" value="SEISMIC"
+            style="left: 175px; top: 470px; font: bold 20px 'Segoe UI';">
     </div>
 
     <div class="controls">
-        <input type="text" id="magnitude" placeholder="Nhập Magnitude..." value="SEISMIC">
         <input type="file" id="imageInput" accept="image/*">
         <button class="btn-save" id="saveLocal">UPLOAD PFP SEISMIC</button>
         <button class="btn-download" id="downloadBtn">DOWNLOAD PFP SEISMIC</button>
@@ -120,7 +120,6 @@
         const imageInput = document.getElementById('imageInput');
         const userNameInput = document.getElementById('userName');
         const roleInput = document.getElementById('role');
-        const magInput = document.getElementById('magnitude');
 
         let userImage = new Image();
         const frameImg = new Image();
@@ -142,7 +141,7 @@
             reader.readAsDataURL(e.target.files[0]);
         };
 
-        [userNameInput, roleInput, magInput].forEach(el => el.oninput = () => drawCard(false));
+        [userNameInput, roleInput].forEach(el => el.oninput = () => drawCard(false));
 
         function drawCard(includeOverlayText = false) {
             ctx.fillStyle = "#000";
@@ -189,16 +188,11 @@
             ctx.shadowColor = "rgba(255, 255, 255, 0.7)";
             ctx.shadowBlur = 8;
 
-            // Always draw Magnitude
-            ctx.font = "bold 20px 'Segoe UI'";
-            ctx.fillText((magInput.value || "SEISMIC").toUpperCase(), 175, 492);
-
             // Only draw Name and Role if requested (e.g. for download)
             if (includeOverlayText) {
                 ctx.font = "bold 20px 'Segoe UI'";
-                ctx.fillText(userNameInput.value.toUpperCase(), 90, 440);
-                ctx.font = "italic 18px 'Segoe UI'";
-                ctx.fillText(roleInput.value.toUpperCase(), 90, 465);
+                ctx.fillText(userNameInput.value.toUpperCase(), 90, 460);
+                ctx.fillText((roleInput.value || "SEISMIC").toUpperCase(), 175, 492);
             }
 
             ctx.shadowBlur = 0;
@@ -208,7 +202,6 @@
             const appState = {
                 name: userNameInput.value,
                 role: roleInput.value,
-                magnitude: magInput.value,
                 pfpData: userImage.src
             };
             try {
@@ -224,8 +217,7 @@
             if (saved) {
                 const data = JSON.parse(saved);
                 userNameInput.value = data.name;
-                roleInput.value = data.role;
-                magInput.value = data.magnitude || "SEISMIC";
+                roleInput.value = data.role || "SEISMIC";
                 if (data.pfpData && data.pfpData.startsWith('data:image')) {
                     userImage = new Image();
                     userImage.onload = () => drawCard();
@@ -252,8 +244,7 @@
                 localStorage.removeItem("seismic_pfp_state");
                 userImage = new Image();
                 userNameInput.value = "";
-                roleInput.value = "";
-                magInput.value = "SEISMIC";
+                roleInput.value = "SEISMIC";
                 imageInput.value = "";
 
                 setTimeout(() => {
