@@ -103,7 +103,7 @@
     <div id="canvas-container">
         <canvas id="pfpCanvas" width="400" height="600"></canvas>
         <input type="text" id="userName" placeholder="NAME" maxlength="20" class="overlay-input"
-            style="top: 438px; font: bold 20px 'Segoe UI';">
+            style="top: 412px; font: bold 20px 'Segoe UI';">
         <input type="text" id="role" placeholder="ROLE" maxlength="20" class="overlay-input" value="SEISMIC"
             style="left: 175px; top: 470px; font: bold 20px 'Segoe UI';">
     </div>
@@ -191,7 +191,7 @@
             // Only draw Name and Role if requested (e.g. for download)
             if (includeOverlayText) {
                 ctx.font = "bold 20px 'Segoe UI'";
-                ctx.fillText(userNameInput.value.toUpperCase(), 90, 460);
+                ctx.fillText(userNameInput.value.toUpperCase(), 90, 435);
                 ctx.fillText((roleInput.value || "SEISMIC").toUpperCase(), 175, 492);
             }
 
