@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <title>Seismic NFT Card Generator</title>
     <style>
         body {
-            background: #0f0c29;
+            background: #0f0c29 url('seismic_bg.jpg') no-repeat center center fixed;
+            background-size: cover;
             color: white;
             font-family: 'Segoe UI', sans-serif;
             display: flex;
@@ -13,6 +15,7 @@
             align-items: center;
             padding: 20px;
         }
+
         #canvas-container {
             margin: 20px 0;
             border-radius: 10px;
@@ -20,34 +23,95 @@
             box-shadow: 0 0 25px rgba(138, 43, 226, 0.6);
             background: #000;
         }
-        canvas { max-width: 100%; height: auto; display: block; }
-        .controls {
-            display: flex; flex-direction: column; gap: 10px;
-            width: 400px; background: rgba(255, 255, 255, 0.1);
-            padding: 20px; border-radius: 10px; backdrop-filter: blur(5px);
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
         }
-        input, button { padding: 12px; border-radius: 5px; border: none; }
-        input { background: #1a1a1a; color: white; border: 1px solid #444; }
-        button { cursor: pointer; font-weight: bold; transition: 0.2s; }
-        button:active { transform: scale(0.98); }
-        .btn-save { background: #8a2be2; color: white; }
-        .btn-download { background: #00c853; color: white; }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        input,
+        button {
+            padding: 12px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        input {
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #444;
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-save {
+            background: #8a2be2;
+            color: white;
+        }
+
+        .btn-download {
+            background: #00c853;
+            color: white;
+        }
+
+        .overlay-input {
+            position: absolute;
+            left: 90px;
+            background: transparent;
+            border: none;
+            color: white;
+            text-transform: uppercase;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+            outline: none;
+            padding: 0;
+            margin: 0;
+            width: 200px;
+            /* Adjust as needed */
+        }
+
+        .overlay-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
     </style>
 </head>
+
 <body>
 
     <h2>SEISMIC CARD GENERATOR</h2>
 
     <div id="canvas-container">
         <canvas id="pfpCanvas" width="400" height="600"></canvas>
+        <input type="text" id="userName" placeholder="NAME" maxlength="20" class="overlay-input"
+            style="top: 418px; font: bold 20px 'Segoe UI';">
+        <input type="text" id="role" placeholder="ROLE" maxlength="20" class="overlay-input"
+            style="top: 445px; font: italic 18px 'Segoe UI';">
     </div>
 
     <div class="controls">
-        <input type="text" id="userName" placeholder="Nhập tên..." maxlength="20">
         <input type="text" id="magnitude" placeholder="Nhập Magnitude..." value="SEISMIC">
         <input type="file" id="imageInput" accept="image/*">
-        <button class="btn-save" id="saveLocal">LƯU TRẠNG THÁI (LOCAL STORAGE)</button>
-        <button class="btn-download" id="downloadBtn">TẢI ẢNH & CLEAR DATA</button>
+        <button class="btn-save" id="saveLocal">UPLOAD PFP SEISMIC</button>
+        <button class="btn-download" id="downloadBtn">DOWNLOAD PFP SEISMIC</button>
     </div>
 
     <script>
@@ -55,6 +119,7 @@
         const ctx = canvas.getContext('2d');
         const imageInput = document.getElementById('imageInput');
         const userNameInput = document.getElementById('userName');
+        const roleInput = document.getElementById('role');
         const magInput = document.getElementById('magnitude');
 
         let userImage = new Image();
@@ -77,9 +142,9 @@
             reader.readAsDataURL(e.target.files[0]);
         };
 
-        [userNameInput, magInput].forEach(el => el.oninput = drawCard);
+        [userNameInput, roleInput, magInput].forEach(el => el.oninput = () => drawCard(false));
 
-        function drawCard() {
+        function drawCard(includeOverlayText = false) {
             ctx.fillStyle = "#000";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -119,27 +184,38 @@
                 ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
             }
 
-            // Vẽ Text với tọa độ scale
+            // Vẽ Text
             ctx.fillStyle = "white";
             ctx.shadowColor = "rgba(255, 255, 255, 0.7)";
             ctx.shadowBlur = 8;
+
+            // Always draw Magnitude
             ctx.font = "bold 20px 'Segoe UI'";
-            ctx.fillText(userNameInput.value.toUpperCase(), 90, 460);
             ctx.fillText((magInput.value || "SEISMIC").toUpperCase(), 175, 492);
+
+            // Only draw Name and Role if requested (e.g. for download)
+            if (includeOverlayText) {
+                ctx.font = "bold 20px 'Segoe UI'";
+                ctx.fillText(userNameInput.value.toUpperCase(), 90, 440);
+                ctx.font = "italic 18px 'Segoe UI'";
+                ctx.fillText(roleInput.value.toUpperCase(), 90, 465);
+            }
+
             ctx.shadowBlur = 0;
         }
 
         document.getElementById('saveLocal').onclick = () => {
             const appState = {
                 name: userNameInput.value,
+                role: roleInput.value,
                 magnitude: magInput.value,
                 pfpData: userImage.src
             };
             try {
                 localStorage.setItem("seismic_pfp_state", JSON.stringify(appState));
-                alert("Đã lưu trạng thái!");
+                alert("Uploaded PFP SEISMIC Successfully!!!");
             } catch (e) {
-                alert("Ảnh quá lớn, hãy dùng ảnh dung lượng thấp hơn.");
+                alert("Upload Failed!!! Local Storage limit exceeded.");
             }
         };
 
@@ -148,7 +224,8 @@
             if (saved) {
                 const data = JSON.parse(saved);
                 userNameInput.value = data.name;
-                magInput.value = data.magnitude;
+                roleInput.value = data.role;
+                magInput.value = data.magnitude || "SEISMIC";
                 if (data.pfpData && data.pfpData.startsWith('data:image')) {
                     userImage = new Image();
                     userImage.onload = () => drawCard();
@@ -159,28 +236,36 @@
 
         document.getElementById('downloadBtn').onclick = () => {
             try {
+                // Draw text on canvas for download
+                drawCard(true);
+
                 const dataURL = canvas.toDataURL("image/png");
                 const link = document.createElement('a');
                 link.download = `Seismic_${userNameInput.value || 'NFT'}.png`;
                 link.href = dataURL;
                 link.click();
 
+                // Revert to overlay mode
+                drawCard(false);
+
                 // DOWNLOAD XONG THÌ CLEAR & RESET
                 localStorage.removeItem("seismic_pfp_state");
                 userImage = new Image();
                 userNameInput.value = "";
+                roleInput.value = "";
                 magInput.value = "SEISMIC";
                 imageInput.value = "";
 
                 setTimeout(() => {
                     drawCard();
-                    alert("Đã tải về và dọn dẹp bộ nhớ!");
+                    alert("Downloaded and cleaned up memory!!!");
                 }, 300);
 
             } catch (err) {
-                alert("Lỗi bảo mật (CORS). Vui lòng chạy qua Live Server.");
+                alert("Security error (CORS). Please run through Live Server.");
             }
         };
     </script>
 </body>
+
 </html>
